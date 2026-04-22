@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Flag Scanner v7.0 | Επιστημονική Ανάλυση Συμπεριφοράς</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            max-width: 950px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .intro-box {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            color: #ccc;
+        }
+        .intro-box h2 {
+            color: #00ff00;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        .critical-note {
+            color: #ff3333;
+            font-weight: bold;
+            padding: 10px;
+            border: 1px dashed #ff3333;
+            margin-top: 15px;
+            display: block;
+        }
+        .question-block {
+            background-color: #1a1a1a;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff00;
+            border-radius: 4px;
+        }
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        .options label {
+            display: inline-block;
+            margin-right: 35px;
+            cursor: pointer;
+            color: #ccc;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .options input {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+        button {
+            display: block;
+            width: 100%;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            padding: 18px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            margin-bottom: 50px;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #00cc00;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        #result-box {
+            margin-bottom: 50px;
+            padding: 25px;
+            display: none;
+            font-size: 1.1em;
+            text-align: left;
+            border: 2px solid;
+            border-radius: 5px;
+            line-height: 1.8;
+        }
+        .danger { color: #ffcccc; border-color: #ff3333; background-color: #330000; }
+        .warning { color: #ffedcc; border-color: #ffaa00; background-color: #332200; }
+        .safe { color: #ccffcc; border-color: #00ff00; background-color: #003300; }
+        .result-title { font-size: 1.4em; font-weight: bold; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+    <h1>[ RED FLAG SCANNER v7.0 ]</h1>
+    
+    <div class="intro-box">
+        <h2>Τι εξετάζει αυτό το εργαλείο;</h2>
+        <p>Αυτό το σύστημα αξιολογεί μοτίβα <strong>Αποφευκτικής Προσκόλλησης</strong>, <strong>Υπερ-ανεξαρτησίας</strong> και <strong>Συναισθηματικής Αποσύνδεσης</strong>. Βασίζεται σε κλινικές παρατηρήσεις σχετικά με το πώς ορισμένα άτομα σαμποτάρουν την εγγύτητα για να διατηρήσουν έναν ψευδή έλεγχο.</p>
+        
+        <span class="critical-note">
+            ΠΡΟΣΟΧΗ: Αυτό το Scanner θα σας γλιτώσει χρόνο και αφόρητο ψυχικό πόνο. Να θυμάστε: Αυτοί οι άνθρωποι λειτουργούν με βάση εσωτερικά ελλείμματα και θα συνεχίσουν τη ζωή τους με μηδενικές τύψεις, καθώς η άμυνά τους είναι να εκλογικεύουν την τοξικότητά τους.
+        </span>
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <button onclick="calculateToxicity()">ΕΚΤΕΛΕΣΗ ΕΠΙΣΤΗΜΟΝΙΚΗΣ ΑΝΑΛΥΣΗΣ</button>
+
+    <div id="result-box"></div>
+
+    <script>
+        const questions = [
+            "Στην αρχή της γνωριμίας, υπήρχε ασταμάτητη επικοινωνία που δημιούργησε ψευδαίσθηση δεσίματος και μετά κόπηκε απότομα;",
+            "Έδειχνε να νιώθει τεράστια ασφάλεια πίσω από μια οθόνη, αλλά έβγαζε άμυνες στην πραγματική τριβή;",
+            "Ο υπερβολικός ενθουσιασμός στην αρχή έμοιαζε περισσότερο με δική του/της ανάγκη για επιβεβαίωση, παρά με πραγματικό ενδιαφέρον για εσένα;",
+            "Όταν η συζήτηση πήγε στο επόμενο φυσιολογικό βήμα, πάτησε φρένο επικαλούμενος/η δικαιολογίες;",
+            "Χρησιμοποίησε φράσεις αποποίησης ευθύνης όπως «μην κάνεις αλλαγές για μένα, για να μη φταίω εγώ αν πάει κάτι λάθος»;",
+            "Χρησιμοποίησε αυτή την προειδοποίηση αργότερα ως δικαιολογία για να διακόψει την επικοινωνία με καθαρή συνείδηση;",
+            "Σε έκανε να νιώσεις ότι οι απολύτως φυσιολογικές σου ανάγκες για σταθερότητα αποτελούσαν «πίεση» για εκείνον/η;",
+            "Απέφυγε να αναλάβει το ελάχιστο μερίδιο ευθύνης για τη λήξη της σχέσης, επιλέγοντας τη σιωπή ή την εξαφάνιση;",
+            "Προβάλλει τον εαυτό του/της ως άτομο υψηλής ηθικής ή θρησκευτικότητας, ενώ η συμπεριφορά στην πράξη δείχνει το αντίθετο;",
+            "Δέχτηκε με τεράστια ευκολία την πρακτική σου βοήθεια ενώ ταυτόχρονα απέσυρε τη συναισθηματική επένδυση;",
+            "Σε αντιμετώπισε περισσότερο ως έναν χρήσιμο λύτη προβλημάτων, παρά ως ισότιμο ερωτικό σύντροφο;",
+            "Εκμεταλλεύτηκε το γεγονός ότι ήσουν πάντα διαθέσιμος/η, θεωρώντας σε δεδομένο/η;",
+            "Απέφευγε να δημοσιοποιήσει τη σχέση σας, παρόλο που ήταν ελεύθερο άτομο ή με διαζύγιο εδώ και χρόνια;",
+            "Καθοδηγούσε τις αποφάσεις του/της με γνώμονα το «τι θα πει ο κόσμος», βάζοντας την εικόνα του/της πάνω από τα συναισθήματά σου;",
+            "Σε έφτασε στο σημείο άγχους να αγνοείς κλήσεις από σημαντικά πρόσωπα της ζωής σου για να του/της απαντήσεις αμέσως;",
+            "Ένιωθες σωματικό άγχος και ταχυκαρδία υπεραναλύοντας την καθυστέρηση των απαντήσεών του/της;",
+            "Υπήρξε η αίσθηση ότι το σώμα σου «αντιστεκόταν» στη σωματική επαφή επειδή το υποσυνείδητό σου δεν του/της είχε εμπιστοσύνη;",
+            "Σε έκανε να νιώσεις ότι οι θυσίες σου είχαν μηδενική αξία μπροστά στις δικές του/της ανασφάλειες;",
+            "Επέλεξε να δώσει τέλος με άνανδρο τρόπο μέσω μηνυμάτων αντί για μια ξεκάθαρη εξήγηση από κοντά ή τηλεφωνικά;",
+            "Χρησιμοποίησε τον φόβο σου μην χάσεις τη σχέση για να πάρει τον πλήρη έλεγχο της κατάστασης;",
+            "Προσπάθησε να κρατήσει μια θολή πόρτα επικοινωνίας για πρακτικούς λόγους, χωρίς συναισθηματική δέσμευση;",
+            "Απέδειξε τελικά με τη στάση του/της ότι δεν μπορεί να σταθεί δίπλα σε έναν άνθρωπο που απαιτεί σεβασμό;",
+            "Ακύρωσε κοινά σχέδια την τελευταία στιγμή, δίνοντας ασαφείς ή υπερβολικές δικαιολογίες;",
+            "Η σχέση προχωρούσε αποκλειστικά με τους δικούς του/της ρυθμούς, αγνοώντας τις δικές σου επιθυμίες;",
+            "Υπήρχαν περίοδοι «ξηρασίας» που διακόπτονταν από ξαφνικές ενέσεις ενδιαφέροντος απλά για να σε κρατάει σε αναμονή;",
+            "Απέφευγε συστηματικά τις βαθιές συζητήσεις γύρω από τα συναισθήματα και το μέλλον;",
+            "Νιώθεις ότι η επικοινωνία με αυτό το άτομο σε άδειαζε ενεργειακά;",
+            "Επιδεικνύει μια 'επιλεκτική ενσυναίσθηση', δηλαδή δείχνει να πονάει για ξένους, αλλά μένει παγερά αδιάφορος/η στον δικό σου πόνο;",
+            "Μόλις η σχέση άρχισε να αποκτά βάθος, άρχισε να βρίσκει παράλογα ψεγάδια στον χαρακτήρα σου για να δικαιολογήσει την απομάκρυνσή του/της;",
+            "Αρνείται πεισματικά να αναγνωρίσει την εγκυρότητα των δικών σου συναισθημάτων, κάνοντάς σε να αμφιβάλλεις για τη λογική σου (Gaslighting);",
+            "Αποφεύγει συστηματικά να δέχεται ουσιαστική στήριξη ή βοήθεια με την αιτιολογία ότι δεν θέλει να 'χρωστάει' σε κανέναν, χρησιμοποιώντας την υπερ-ανεξαρτησία ως ασπίδα για να μην αισθάνεται υποχρέωση ή δέσμευση απέναντί σου;"
+        ];
+
+        const container = document.getElementById('quiz-container');
+
+        questions.forEach((q, index) => {
+            const html = `
+                <div class="question-block">
+                    <div class="question-text">${index + 1}. ${q}</div>
+                    <div class="options">
+                        <label><input type="radio" name="q${index}" value="1"> ΝΑΙ</label>
+                        <label><input type="radio" name="q${index}" value="0"> ΟΧΙ</label>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        function calculateToxicity() {
+            let points = 0;
+            let answeredAll = true;
+
+            for (let i = 0; i < questions.length; i++) {
+                let radios = document.getElementsByName('q' + i);
+                let checked = false;
+                for (let j = 0; j < radios.length; j++) {
+                    if (radios[j].checked) {
+                        points += parseInt(radios[j].value);
+                        checked = true;
+                        break;
+                    }
+                }
+                if (!checked) {
+                    answeredAll = false;
+                }
+            }
+
+            if (!answeredAll) {
+                alert(`Σφάλμα: Παρακαλώ απαντήστε σε όλες τις παραμέτρους (${questions.length}/${questions.length}).`);
+                return;
+            }
+
+            let score = Math.round((points / questions.length) * 100);
+            let resultBox = document.getElementById("result-box");
+            resultBox.style.display = "block";
+            resultBox.className = ""; 
+
+            if (score >= 70) {
+                resultBox.innerHTML = `
+                    <span class="result-title" style="color:#ff3333;">Κρίσιμο Επίπεδο: ${score}% - Μοτίβο Τοξικής Αποφυγής</span>
+                    <strong>Επιστημονική Διάγνωση:</strong> Το άτομο αυτό λειτουργεί με βάση έναν μηχανισμό «αποφευκτικής προσκόλλησης» και παθολογικής υπερ-ανεξαρτησίας. Η άρνησή του/της να 'χρωστάει' ή να δέχεται βοήθεια είναι ένα τείχος που εμποδίζει την αμοιβαία εμπιστοσύνη. Μόλις αισθανθεί ότι η σχέση γίνεται πραγματική, ενεργοποιεί άμυνες για να σε αποδιώξει. Η έλλειψη τύψεων είναι δομικό στοιχείο του χαρακτήρα του/της για να μην έρχεται αντιμέτωπος/η με τα δικά του/της κενά.<br><br>
+                    <strong>Συνιστώμενη Δράση:</strong> Οριστική διακοπή επαφής (No Contact). Η προσπάθεια για διάλογο θα οδηγήσει μόνο σε περαιτέρω Gaslighting. Προστάτεψε το σύστημά σου.`;
+                resultBox.classList.add("danger");
+            } else if (score >= 40) {
+                resultBox.innerHTML = `
+                    <span class="result-title" style="color:#ffaa00;">Προσοχή: ${score}% - Ενδείξεις Συναισθηματικής Αστάθειας</span>
+                    <strong>Επιστημονική Διάγνωση:</strong> Υπάρχουν σημαντικά κενά στην ενσυναίσθηση και τη συνέπεια. Το άτομο χρησιμοποιεί «φρένα» και δικαιολογίες για να αποφύγει την ευθύνη της εγγύτητας. Δεν είναι σε θέση να προσφέρει μια υγιή σχέση αυτή τη στιγμή.<br><br>
+                    <strong>Συνιστώμενη Δράση:</strong> Υποβάθμιση προτεραιότητας. Μην επενδύεις συναισθήματα ή χρόνο σε ένα «σπασμένο» σύστημα. Κράτα αποστάσεις ασφαλείας.`;
+                resultBox.classList.add("warning");
+            } else {
+                resultBox.innerHTML = `
+                    <span class="result-title" style="color:#00ff00;">Σταθερό Σύστημα: ${score}% - Χαμηλό Ρίσκο</span>
+                    <strong>Επιστημονική Διάγνωση:</strong> Η συμπεριφορά κρίνεται εντός των ορίων της υγιούς ανθρώπινης τριβής. Δεν ανιχνεύθηκαν μοτίβα χειραγώγησης ή παθολογικής αποφυγής.<br><br>
+                    <strong>Συνιστώμενη Δράση:</strong> Συνέχισε την επικοινωνία με ειλικρίνεια.`;
+                resultBox.classList.add("safe");
+            }
+
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
